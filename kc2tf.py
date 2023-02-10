@@ -638,7 +638,6 @@ if __name__ == '__main__':
                       'offline_access', 'microprofile-jwt']
 
     default_mapper_names = ['Client ID', 'Client IP Address', 'Client Host']
-    mapper_client_exceptions = ['Namex-Dev', '', 'namex-solr-admin-app']
     default_flows = ['browser', 'direct grant', 'registration', 'reset credentials', 'clients', 'first broker login',
                      'docker auth', 'http challenge', 'saml ecp', 'registration form', 'forms',
                      'Handle Existing Account', 'Verify Existing Account by Re-authentication',
