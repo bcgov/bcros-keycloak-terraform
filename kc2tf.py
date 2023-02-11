@@ -160,7 +160,7 @@ def process_clients_to_variable():
                 f_out.write('\n\t}\n')
     with open('client_secrets.tfvars', "w") as f_out:
         for client in data['clients']:
-            if client['clientId'] not in default_accounts:
+            if client['clientId'] not in default_accounts and 'secret' in client:
                 f_out.write(client['clientId'].lower().replace(' ', '_') + '_client = {')
                 f_out.write('\n\t\tid     = "' + client['clientId'] + '"')
                 f_out.write('\n\t\tsecret = "' + client['secret'] + '"')
@@ -271,15 +271,16 @@ def process_scope_mappings():
     with open('scope_role_mappers.tf', "w") as f_out:
         for mapper in data['scopeMappings']:
             for role in mapper['roles']:
-                f_out.write('resource "keycloak_generic_role_mapper" "' + mapper['clientScope'] + '_' + role + '_mapper" {')
-                f_out.write('\n\trealm_id = data.keycloak_realm.bcregistry_realm.id')
-                if mapper['clientScope'] in default_scopes:
-                    f_out.write('\n\tclient_scope_id = data.keycloak_openid_client_scope.default_scope_' + mapper['clientScope'] + '.id')
-                    f_out.write('\n\trole_id = data.keycloak_role.realm_role_' + role + '.id')
-                else:
-                    f_out.write('\n\tclient_scope_id = keycloak_openid_client_scope.' + mapper['clientScope'] + '.id')
-                    f_out.write('\n\trole_id = keycloak_role.' + role + '.id')
-                f_out.write('\n\t}\n')
+                if 'clientScope' in mapper:
+                    f_out.write('resource "keycloak_generic_role_mapper" "' + mapper['clientScope'] + '_' + role + '_mapper" {')
+                    f_out.write('\n\trealm_id = data.keycloak_realm.bcregistry_realm.id')
+                    if mapper['clientScope'] in default_scopes:
+                        f_out.write('\n\tclient_scope_id = data.keycloak_openid_client_scope.default_scope_' + mapper['clientScope'] + '.id')
+                        f_out.write('\n\trole_id = data.keycloak_role.realm_role_' + role + '.id')
+                    else:
+                        f_out.write('\n\tclient_scope_id = keycloak_openid_client_scope.' + mapper['clientScope'] + '.id')
+                        f_out.write('\n\trole_id = keycloak_role.' + role + '.id')
+                    f_out.write('\n\t}\n')
 
 
 def process_service_account_roles():
@@ -471,30 +472,6 @@ def export_data(client, token, base_url, realm):
     response = requests.request("GET", url, headers=headers)
 
     dump_json = response.json()
-
-    ix = 0
-    max_val = 10000
-    users_json = []
-
-    print("processing users...")
-    while True:
-        url = base_url2 + "/users?first=" + str(ix*max_val) + "&max=" + str(max_val)
-        user_resp = requests.request("GET", url, headers=headers)
-        if user_resp.status_code == 200:
-            ix += 1
-            res_json = user_resp.json()
-            if len(res_json) == 0:
-                break
-            else:
-                users_json.extend(res_json)
-                print(ix*max_val)
-
-    print('number of users before get users api call:')
-    print(len(response_json['users']))
-
-    response_json['users'].extend(users_json)
-    print('number of users after get users api call:')
-    print(len(response_json['users']))
 
     user_groups = {}
     for group in dump_json:
