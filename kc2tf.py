@@ -2,7 +2,7 @@ import base64
 import json
 import time
 import requests
-
+import sys
 
 def process_realm_roles():
     f = open('realm_dump.json')
