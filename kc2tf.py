@@ -644,3 +644,4 @@ if __name__ == '__main__':
                      'Verify Existing Account by Re-authentication - auth-otp-form - Conditional']
     extra_scopes = ['namex-scope', 'argocd-groups'] # for now manually create these
     client_list = []
+    globals()[sys.argv[1]](sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
